@@ -44,7 +44,11 @@ router.get('/me',authentication.loginRequired, userController.getCurrentUser)
  * @description Get a user profile
  * @access Public
  */
-router.get('/:id',authentication.loginRequired,  userController.getSingleUser)
+router.get('/:id',authentication.loginRequired,
+      validators.validate([
+        param("id").exists().isString().custom(validators.checkObjectId)
+      ]),
+  userController.getSingleUser)
 
 /**
  * @route  PUT /users/:id
@@ -52,6 +56,10 @@ router.get('/:id',authentication.loginRequired,  userController.getSingleUser)
  * @body {name, avatarUrl, coverUrl, aboutMe, city, country, company, jobTilte, facebookLink, linkedinLink, twitterLink}
  * @access Login required
  */
-router.put('/:id',authentication.loginRequired, userController.UpdateProfile)
+router.put('/:id',authentication.loginRequired,
+  validators.validate([
+    param("id").exists().isString().custom(validators.checkObjectId)
+  ]),
+ userController.UpdateProfile)
 
 module.exports = router

@@ -3,8 +3,8 @@ const Schema = mongoose.Schema;
 
 const friendSchema = Schema(
     {
-        from:{type:Schema.ObjcetId, required:true, ref:"User"},
-        to: {type: Schema.ObjcetId, required:true, ref:"User"},
+        from:{type:Schema.ObjectId, required:true, ref:"User"},
+        to: {type: Schema.ObjectId, required:true, ref:"User"},
         status:{
             type:String,
             enum:["pending", "accepted", "declined"]

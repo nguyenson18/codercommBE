@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const postSchema = Schema(
     {
-        Content:{type:String, required: true},
+        content:{type:String, required: true},
         image:{type: String, default: ""},
         author:{
             type: Schema.Types.ObjectId,

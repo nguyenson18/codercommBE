@@ -18,8 +18,9 @@ validators.validate = (validationArray) => async(req,res,next) => {
     return sendResponse(res, 422, false, null, {message},"Validation Error")    
 }
 
-validators.checkObjectId = (paramId)=>{
-    if(mongoose.Types.ObjectId.isValid(paramId)){
+validators.checkObjectId = (paramId)=>{ 
+     // kiểm tra phải id của mongoodb
+    if(!mongoose.Types.ObjectId.isValid(paramId)){
         throw new Error("Invalid ObjcetId")
     }
     return true
