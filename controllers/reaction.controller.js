@@ -1,8 +1,39 @@
-const { default: mongoose } = require("mongoose");
+const mongoose  = require("mongoose");
 const { catchAsync, sendResponse, AppError } = require("../helpers/utils");
 const Reaction = require("../models/Reaction")
 
-const reactionController ={}; 
+const reactionController ={};
+const calculateReactions = async (targetId, targetType) => {
+    const stats = await Reaction.aggregate([
+        {
+            $match:{targetId: new mongoose.Types.ObjectId(targetId)}
+        },
+        {
+            $group:{
+                _id:'$targetId',
+                like: {
+                    $sum:{
+                        $cond:[{$eq: ["$emoji", "like"]}, 1, 0]
+                    }
+                },
+                dislike: {
+                    $sum:{
+                        $cond:[{$eq: ["$emoji", "dislike"]}, 1 , 0]
+                    },
+                },
+            },
+        },
+    ]);
+
+    console.log(stats);
+    const reactions = {
+        like: stats[0] && stats[0].like || 0,
+        dislike: stats[0] && stats[0].dislike || 0
+    }
+    console.log(reactions)
+    await mongoose.model(targetType).findByIdAndUpdate(targetId, {reactions: reactions})
+    return stats;
+} 
 
 reactionController.saveReaction = catchAsync(async(req, res, next) => {
     const  {targetId, targetType, emoji} = req.body;
@@ -25,13 +56,16 @@ reactionController.saveReaction = catchAsync(async(req, res, next) => {
         })
     }else {
         if(reaction.emoji === emoji) {
-            await reaction.delete()
+          reaction = await Reaction.findByIdAndDelete(reaction._id)
         }else{
             reaction.emoji = emoji;
-            await reaction.save()
+           reaction = await Reaction.findByIdAndUpdate(reaction._id, {emoji: emoji})
         }
     }
-    return sendResponse(res, 200, true, reaction, null, 'save reaction success')
+
+    const reactions = await calculateReactions(targetId, targetType)
+
+    return sendResponse(res, 200, true, reactions, null, 'save reaction success')
 })
 
 module.exports = reactionController

@@ -3,10 +3,10 @@ const Schema = mongoose.Schema;
 
 const reactionSchema = Schema(
   {
-    author: { type: Schema.ObjectId, required: true, ref: "User" },
+    author: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     targetType: { type: String, required: true, enum: ["Post", "Comment"] },
     targetId: {
-      type: Schema.ObjectId,
+      type: Schema.Types.ObjectId,
       required: true,
       refPath: "targetType",
     },
