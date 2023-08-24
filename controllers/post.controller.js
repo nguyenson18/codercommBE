@@ -74,7 +74,7 @@ postController.getAllPost = catchAsync(async (req, res, next) => {
     $or:[{from:userId}, {to: userId}],
     status: 'accepted'
   })
-  console.log(userFriendIds)
+
   if(userFriendIds && userFriendIds.length){
     userFriendIds = userFriendIds.map((friend) => {
         if(friend.from._id.equals(userId)) return friend.to;
