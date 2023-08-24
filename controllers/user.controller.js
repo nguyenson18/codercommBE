@@ -2,7 +2,8 @@ const { sendResponse, AppError, catchAsync } = require('../helpers/utils');
 const User = require('../models/User');
 const Friend = require('../models/Friend')
 const bcrypt = require('bcryptjs')
-const {createReadStream} = require('fs')
+const {createReadStream} = require('fs');
+const sendMail = require('../helpers/sendMail');
 
 const userController ={}; 
 
@@ -28,7 +29,6 @@ userController.register = catchAsync(async(req, res , next) => {
         "Register User Success"
     )
 })
-
 
 userController.getAllUsers = catchAsync(async(req,res,next) => {
     let {page, limit , ...filter} = req.query
@@ -126,6 +126,7 @@ userController.updateProfile = catchAsync(async(req,res,next) => {
         "coverUrl",
         "aboutMe",
         "city",
+        "address",
         "country",
         "company",
         "jobTitle",
@@ -150,4 +151,20 @@ userController.updateProfile = catchAsync(async(req,res,next) => {
         "Update user success"
     )
 })
+// forgot password
+userController.forgotPassword = catchAsync(async(req, res, next) => {
+    const {email} = req.body;
+    let user = await User.find({ email }, "+password");
+    if (!user.length) {
+      throw new AppError(400, "User Not Exists", "Reset Password Error");
+    }
+    const salt = await bcrypt.genSalt(10);
+    const password = await bcrypt.hash("12345678", salt);
+    let templateVars = { name: user[0]?.name, password: 12345678 };
+    let subject = "Reset Password";
+    await sendMail({ template: "template", templateVars, subject, to: email });
+    user = await User.updateOne({ email: email }, { password: password });  
+    sendResponse(res, 200, true, user, null, "Reset Password Success");
+})
+
 module.exports = userController;

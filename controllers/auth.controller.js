@@ -24,4 +24,6 @@ authController.login = catchAsync(async(req, res, next) => {
         "Login User Success"
     )
 })
+
+
 module.exports = authController;

@@ -13,6 +13,7 @@ const userSchema = Schema(
     coverUrl: { type: String, required: false, default: "" },
 
     aboutMe: { type: String, required: false, default: "" },
+    address: { type: String, required: false, default: "" },
     city: { type: String, required: false, default: "" },
     country: { type: String, required: false, default: "" },
     company: { type: String, required: false, default: "" },
