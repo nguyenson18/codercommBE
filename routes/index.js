@@ -25,4 +25,13 @@ router.use('/reactions', reactionApi)
 const friendApi = require('./friend.api')
 router.use('/friends', friendApi)
 
+// chatApi
+const chatApi = require('./chat.api')
+router.use('/chat', chatApi)
+
+// messageApi
+const messageApi = require('./message.api')
+router.use('/message', messageApi)
+
+
 module.exports = router;

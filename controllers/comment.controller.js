@@ -8,7 +8,6 @@ const caculateCommentCount = async (postId) => {
       post: postId,
       isDeleted: false,
     });
-    console.log(commentCount)
     await Post.findByIdAndUpdate(postId, {commentCount});
   };
 
