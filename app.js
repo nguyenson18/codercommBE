@@ -6,10 +6,15 @@ const cors = require("cors")
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const {sendResponse} = require("./helpers/utils")
+const { sendResponse } = require("./helpers/utils")
 const { Server } = require("socket.io");
+const server = http.createServer(app);
 
-const io = new Server(5002, { cors: process.env.CLIENT_URL || '' });
+const io = new Server(server, {
+    cors: {
+        origin: process.env.CLIENT_URL || "*",
+    },
+});
 
 const indexRouter = require('./routes/index');
 
@@ -18,45 +23,45 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(cors({
-  origin: process.env.CLIENT_URL || "*",
-  credentials: true,
+    origin: process.env.CLIENT_URL || "*",
+    credentials: true,
 }))
 app.use(express.static(path.join(__dirname, 'public')));
 
 let onlineUsers = []
 
 io.on("connection", (socket) => {
-    socket.on("addNewUser", (userId)=> {
+    socket.on("addNewUser", (userId) => {
         !onlineUsers.some(user => user.userId === userId) && userId !== null &&
-        onlineUsers.push({
-            userId,
-            socketId: socket.id
-        })
+            onlineUsers.push({
+                userId,
+                socketId: socket.id
+            })
         io.emit("getOnlineUsers", onlineUsers)
     })
     // remove user
-  socket.on("removeUser", (userId) => {
-    onlineUsers = onlineUsers.filter(user => user.userId !== userId)
-  })
-  
-  // add messages 
-  socket.on("sendMessage", (message) => {
-    console.log("meaa", message)
-    const user = onlineUsers.find(user => user?.userId === message.recipientId)
-    console.log(user,onlineUsers)
-    if(user){
-        io.to(user.socketId).emit("getMessage", message);
-        io.to(user.socketId).emit("getNotification", {
-          senderId: message.senderId,
-          isRead:false,
-          date: new Date()
-        })
-      }
-  })
+    socket.on("removeUser", (userId) => {
+        onlineUsers = onlineUsers.filter(user => user.userId !== userId)
+    })
+
+    // add messages 
+    socket.on("sendMessage", (message) => {
+        console.log("meaa", message)
+        const user = onlineUsers.find(user => user?.userId === message.recipientId)
+        console.log(user, onlineUsers)
+        if (user) {
+            io.to(user.socketId).emit("getMessage", message);
+            io.to(user.socketId).emit("getNotification", {
+                senderId: message.senderId,
+                isRead: false,
+                date: new Date()
+            })
+        }
+    })
 })
 
 app.get("/", (req, res) => {
-  res.status(200).send("API is running");
+    res.status(200).send("API is running");
 });
 
 app.use('/api', indexRouter);
@@ -65,7 +70,7 @@ const mongoose = require('mongoose')
 const mongoURI = process.env.MONGODB_URL;
 mongoose
     .connect(mongoURI)
-    .then(()=> console.log("DB connected"))
+    .then(() => console.log("DB connected"))
     .catch((err) => console.log(err))
 
 // catch 404 and forard to error handler
@@ -78,16 +83,16 @@ app.use((req, res, next) => {
 /* Initialize Error Handling */
 app.use((err, req, res, next) => {
     console.log("ERROR", err);
-    if(err.isOperational){
+    if (err.isOperational) {
         return sendResponse(
             res,
             err.statusCode ? err.statusCode : 500,
             false,
             null,
-            {message: err.message},
+            { message: err.message },
             err.errorType
         )
-    }else {
+    } else {
         return sendResponse(
             res,
             err.statusCode ? err.statusCode : 500,
@@ -97,5 +102,5 @@ app.use((err, req, res, next) => {
             err.isOperational ? err.errorType : "Internal Server Error"
         );
     }
-});  
+});
 module.exports = app;
