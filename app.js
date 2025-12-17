@@ -12,10 +12,10 @@ const http = require('http');
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: {
-        origin: process.env.CLIENT_URL,
-        credentials: true
-    },
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
 });
 
 const indexRouter = require('./routes/index');
@@ -30,8 +30,7 @@ const corsOptions = {
     allowedHeaders: ["Content-Type", "Authorization"]
 };
 
-app.use(cors(corsOptions));
-app.options("*", cors());
+app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
