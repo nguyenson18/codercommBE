@@ -6,32 +6,24 @@ const cors = require("cors")
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
+const http = require('http');
 const { sendResponse } = require("./helpers/utils")
 const { Server } = require("socket.io");
-const http = require('http');
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+    cors: {
+        origin: process.env.CLIENT_URL || "*",
+    },
 });
 
 const indexRouter = require('./routes/index');
 
 app.use(logger('dev'));
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-const corsOptions = {
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
-};
-
-app.options("*", cors(corsOptions));
-app.use(express.json());
+app.use(cors())
 app.use(express.static(path.join(__dirname, 'public')));
 
 let onlineUsers = []
