@@ -21,7 +21,6 @@ const io = new Server(server, {
 const indexRouter = require('./routes/index');
 
 app.use(logger('dev'));
-app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 const corsOptions = {
@@ -32,6 +31,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors());
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 let onlineUsers = []
