@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const { sendResponse } = require("./helpers/utils")
 const { Server } = require("socket.io");
+const http = require('http');
 const server = http.createServer(app);
 
 const io = new Server(server, {
