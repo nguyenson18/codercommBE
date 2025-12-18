@@ -6,16 +6,7 @@ const cors = require("cors")
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const http = require('http');
 const { sendResponse } = require("./helpers/utils")
-const { Server } = require("socket.io");
-const server = http.createServer(app);
-
-const io = new Server(server, {
-    cors: {
-        origin: process.env.CLIENT_URL || "*",
-    },
-});
 
 const indexRouter = require('./routes/index');
 
@@ -26,37 +17,6 @@ app.use(cookieParser());
 app.use(cors())
 app.use(express.static(path.join(__dirname, 'public')));
 
-let onlineUsers = []
-
-io.on("connection", (socket) => {
-    socket.on("addNewUser", (userId) => {
-        !onlineUsers.some(user => user.userId === userId) && userId !== null &&
-            onlineUsers.push({
-                userId,
-                socketId: socket.id
-            })
-        io.emit("getOnlineUsers", onlineUsers)
-    })
-    // remove user
-    socket.on("removeUser", (userId) => {
-        onlineUsers = onlineUsers.filter(user => user.userId !== userId)
-    })
-
-    // add messages 
-    socket.on("sendMessage", (message) => {
-        console.log("meaa", message)
-        const user = onlineUsers.find(user => user?.userId === message.recipientId)
-        console.log(user, onlineUsers)
-        if (user) {
-            io.to(user.socketId).emit("getMessage", message);
-            io.to(user.socketId).emit("getNotification", {
-                senderId: message.senderId,
-                isRead: false,
-                date: new Date()
-            })
-        }
-    })
-})
 
 app.get("/", (req, res) => {
     res.status(200).send("API is running");

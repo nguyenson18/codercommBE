@@ -7,7 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('codercommbe:server');
 var http = require('http');
-
+const { Server } = require("socket.io");
 
 /**
  * Get port from environment and store in Express.
@@ -21,6 +21,53 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+
+/** ✅ Socket.IO phải gắn vào server đang listen */
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL,
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+let onlineUsers = [];
+
+io.on("connection", (socket) => {
+  socket.on("addNewUser", (userId) => {
+    !onlineUsers.some(user => user.userId === userId) && userId !== null &&
+      onlineUsers.push({
+        userId,
+        socketId: socket.id
+      })
+    io.emit("getOnlineUsers", onlineUsers)
+  })
+  // remove user
+  socket.on("removeUser", (userId) => {
+    onlineUsers = onlineUsers.filter(user => user.userId !== userId)
+  })
+
+  // add messages 
+  socket.on("sendMessage", (message) => {
+    // lấy user cần gửi
+    const user = onlineUsers.find(user => user?.userId === message.receiverId)
+    if (user) {
+      io.to(user.socketId).emit("getMessage", message);
+      io.to(user.socketId).emit("getNotification", {
+        fromId: message.senderId,
+        toId: message.receiverId,
+        isRead: false,
+        date: new Date()
+      })
+    }
+  })
+
+  // disconnect
+  socket.on("disconnect", () => {
+    onlineUsers = onlineUsers.filter(user => user.socketId !== socket.id);
+    io.emit("getOnlineUsers", onlineUsers)
+  })
+})
 
 /**
  * Listen on provided port, on all network interfaces.
